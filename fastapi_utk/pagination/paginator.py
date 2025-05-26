@@ -30,22 +30,29 @@ class Paginator:
         if total is None:
             total_pages = None
         else:
-            total_pages = (total + self.page_size - 1) // self.page_size + 1
+            total_pages = (total + self.page_size - 1) // self.page_size
 
         if (items_len := len(items)) < self.page_size:
             page_size = items_len
         else:
             page_size = self.page_size
 
-        if (total_pages is not None) and (self.page == total_pages):
+        next_page_number = self.page + 1
+        previous_page_number = self.page - 1
+
+        if next_page_number < MIN_PAGE:
+            next_page = self._get_page_url(MIN_PAGE)
+        elif (total_pages is not None) and (next_page_number > total_pages):
             next_page = None
         else:
-            next_page = self._get_page_url(self.page + 1)
+            next_page = self._get_page_url(next_page_number)
 
-        if (total_pages is not None) and (self.page == MIN_PAGE):
+        if previous_page_number < MIN_PAGE:
             previous_page = None
+        elif (total_pages is not None) and (previous_page_number > total_pages):
+            previous_page = self._get_page_url(total_pages)
         else:
-            previous_page = self._get_page_url(self.page - 1)
+            previous_page = self._get_page_url(previous_page_number)
 
         return Paginated(
             data=items,
@@ -59,8 +66,11 @@ class Paginator:
             ),
         )
 
-    def _get_page_url(self, page_number: int) -> HttpUrl | None:
-        if not self.url or not self.url_page_param or page_number == MIN_PAGE:
+    def _get_page_url(
+        self,
+        page_number: int,
+    ) -> HttpUrl | None:
+        if not self.url or not self.url_page_param or page_number < MIN_PAGE:
             return None
 
         url = deepcopy(self.url)
