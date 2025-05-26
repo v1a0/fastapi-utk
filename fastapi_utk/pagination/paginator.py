@@ -23,7 +23,7 @@ class Paginator:
 
     def __call__[M: BaseModel](
         self,
-        items: list[tp.Any],
+        items: list[M],
         *,
         total: int | None = None,
     ) -> Paginated[M]:
