@@ -46,7 +46,7 @@ pagination = Pagination()
 def get_users(
     paginator: tp.Annotated[Paginator, pagination.Depends()],
 ) -> Paginated[User]:
-  total, users = get_users_from_db(...)
+  total, users = get_users_from_db(..., limit=paginator.limit, offset=paginator.offset)
 
   return paginator(
     [
