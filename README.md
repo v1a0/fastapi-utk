@@ -2,6 +2,15 @@
 
 The most useful tools for any FastAPI project
 
+
+## Installation
+
+```shell
+pip install fastapi-utk
+```
+
+## Features
+
 - Api
   - Pagination
     - Pagination
