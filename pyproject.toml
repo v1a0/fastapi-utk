@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     { name = "v1a0", email = "contact@v1a0.dev" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.12",
     "pydantic>=2.11.5",
