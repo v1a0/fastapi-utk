@@ -2,7 +2,7 @@
 
 ```shell
 python3 -m pip install requirements.txt
-uvicorn __main__:create_app --factory --reload
+uvicorn app:create_app --factory --reload
 ```
 
 # Open Swagger
