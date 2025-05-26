@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    hooks:
+      - id: mypy
+        args: [--strict]
+        additional_dependencies:
+          - types-requests
+          - types-python-dateutil
