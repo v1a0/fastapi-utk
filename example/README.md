@@ -1,8 +1,12 @@
 # Run
 
 ```shell
-python3 -m pip install requirements.txt
-uvicorn __main__:create_app --factory --reload
+python3.12 -m venv env
+. ./env/bin/activate
+
+python -m pip install -r requirements.txt
+
+uvicorn app:create_app --factory --reload
 ```
 
 # Open Swagger
