@@ -1,7 +1,11 @@
 # Run
 
 ```shell
-python3 -m pip install requirements.txt
+python3.12 -m venv env
+. ./env/bin/activate
+
+python -m pip install -r requirements.txt
+
 uvicorn app:create_app --factory --reload
 ```
 

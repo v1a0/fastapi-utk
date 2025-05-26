@@ -33,3 +33,4 @@ typing-inspection==0.4.1
     # via pydantic
 uvicorn==0.34.2
     # via fastapi-utk (pyproject.toml)
+fastapi-utk>=0.1.0
