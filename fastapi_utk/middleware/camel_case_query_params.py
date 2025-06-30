@@ -2,8 +2,8 @@ from collections.abc import Awaitable, Callable
 from urllib.parse import urlencode
 
 from fastapi import Request, Response
+from pydantic.alias_generators import to_snake
 from starlette.middleware.base import BaseHTTPMiddleware
-from ..strings import camel_to_snake_case
 
 __all__ = [
     "CamelCaseQueryParamsMiddleware",
@@ -41,8 +41,7 @@ class CamelCaseQueryParamsMiddleware(BaseHTTPMiddleware):
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         query_params = {
-            camel_to_snake_case(key): value
-            for key, value in request.query_params.multi_items()
+            to_snake(key): value for key, value in request.query_params.multi_items()
         }
 
         request.scope["query_string"] = urlencode(query_params, doseq=True).encode(

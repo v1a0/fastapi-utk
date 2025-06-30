@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from fastapi import Depends, Query
 from fastapi.exceptions import RequestValidationError
+from pydantic.alias_generators import to_camel, to_snake
 
 from ..not_set import NotSet
-from ..strings import snake_to_camel_case, camel_to_snake_case
 
 
 class SortingOption(tp.NamedTuple):
@@ -85,7 +85,7 @@ class Sorting:
             choices += [f"-{v}" for v in choices]
 
         if translate_as_camel_case:
-            choices = [snake_to_camel_case(choice) for choice in choices]
+            choices = [to_camel(choice) for choice in choices]
 
         def _sorting_dependency(
             sorting_query: str | None = Query(
@@ -141,7 +141,7 @@ class Sorting:
 
             return [
                 (
-                    SortingOption(field=camel_to_snake_case(option), is_asc=is_asc)
+                    SortingOption(field=to_snake(option), is_asc=is_asc)
                     if translate_as_camel_case
                     else SortingOption(field=option, is_asc=is_asc)
                 )
