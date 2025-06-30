@@ -87,8 +87,9 @@ class Sorting:
                 alias=tp.cast(str, url_query_param_name),
                 example=tp.cast(str, delimiter).join(
                     choice
-                    for choice in (default or choices)
-                    if not choice.startswith("-")
+                    for choice in (
+                        default or {key for key in choices if not key.startswith("-")}
+                    )
                 ),
             ),
         ) -> list[SortingOption]:
