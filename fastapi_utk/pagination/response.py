@@ -1,4 +1,5 @@
 from pydantic import HttpUrl, BaseModel
+from pydantic.alias_generators import to_camel
 
 __all__ = [
     "PaginationInfo",
@@ -14,7 +15,19 @@ class PaginationInfo(BaseModel):
     next_page: HttpUrl | None = None
     prev_page: HttpUrl | None = None
 
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        use_enum_values = True
+        alias_generator = to_camel
+
 
 class Paginated[T: BaseModel](BaseModel):
     data: list[T]
     pagination: PaginationInfo
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        use_enum_values = True
+        alias_generator = to_camel

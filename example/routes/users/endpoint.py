@@ -40,6 +40,7 @@ def get_users(
                 id=user.id,
                 age=user.age,
                 name=user.name,
+                is_active=user.is_active,
             )
             for user in users
         ],

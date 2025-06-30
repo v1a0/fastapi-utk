@@ -48,21 +48,41 @@ class Paginator:
             next_page = self._get_page_url(next_page_number)
 
         if previous_page_number < MIN_PAGE:
-            previous_page = None
+            prev_page = None
         elif (total_pages is not None) and (previous_page_number > total_pages):
-            previous_page = self._get_page_url(total_pages)
+            prev_page = self._get_page_url(total_pages)
         else:
-            previous_page = self._get_page_url(previous_page_number)
+            prev_page = self._get_page_url(previous_page_number)
 
+        return self.paginated_response(
+            items=items,
+            total=total,
+            page=self.page,
+            page_size=page_size,
+            total_pages=total_pages,
+            next_page=next_page,
+            prev_page=prev_page,
+        )
+
+    @staticmethod
+    def paginated_response[T: BaseModel](
+        items: list[T],
+        total: int | None,
+        page: int,
+        page_size: int,
+        total_pages: int | None,
+        next_page: HttpUrl | None,
+        prev_page: HttpUrl | None,
+    ) -> Paginated[T]:
         return Paginated(
             data=items,
             pagination=PaginationInfo(
                 total=total,
-                page=self.page,
+                page=page,
                 page_size=page_size,
                 total_pages=total_pages,
                 next_page=next_page,
-                prev_page=previous_page,
+                prev_page=prev_page,
             ),
         )
 
