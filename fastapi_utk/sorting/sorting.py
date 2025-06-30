@@ -5,8 +5,6 @@ from fastapi import Query, params
 from fastapi.exceptions import RequestValidationError
 from pydantic.alias_generators import to_camel, to_snake
 
-from ..not_set import NotSet
-
 
 class SortingOption(tp.NamedTuple):
     field: str
@@ -60,25 +58,25 @@ class Sorting:
         self,
         choices: list[str],
         *,
-        default: list[str] | NotSet = NotSet.NOT_SET,
-        delimiter: str | NotSet = NotSet.NOT_SET,
-        query_param_name: str | NotSet = NotSet.NOT_SET,
-        is_negative_sorting_allowed: bool | NotSet = NotSet.NOT_SET,
-        translate_as_camel_case: bool | NotSet = NotSet.NOT_SET,
+        default: list[str] | None = None,
+        delimiter: str | None = None,
+        query_param_name: str | None = None,
+        is_negative_sorting_allowed: bool | None = None,
+        translate_as_camel_case: bool | None = None,
     ) -> tp.Callable[..., list[SortingOption]]:
-        if isinstance(default, NotSet):
+        if default is None:
             default = []
 
-        if isinstance(delimiter, NotSet):
+        if delimiter is None:
             delimiter = self.delimiter
 
-        if isinstance(query_param_name, NotSet):
+        if query_param_name is None:
             query_param_name = self.query_param_name
 
-        if isinstance(is_negative_sorting_allowed, NotSet):
+        if is_negative_sorting_allowed is None:
             is_negative_sorting_allowed = self.is_negative_sorting_allowed
 
-        if isinstance(translate_as_camel_case, NotSet):
+        if translate_as_camel_case is None:
             translate_as_camel_case = self.translate_as_camel_case
 
         if is_negative_sorting_allowed:
@@ -154,11 +152,11 @@ class Sorting:
         self,
         choices: list[str],
         *,
-        default: list[str] | NotSet = NotSet.NOT_SET,
-        delimiter: str | NotSet = NotSet.NOT_SET,
-        query_param_name: str | NotSet = NotSet.NOT_SET,
-        is_negative_sorting_allowed: bool | NotSet = NotSet.NOT_SET,
-        translate_as_camel_case: bool | NotSet = NotSet.NOT_SET,
+        default: list[str] | None = None,
+        delimiter: str | None = None,
+        query_param_name: str | None = None,
+        is_negative_sorting_allowed: bool | None = None,
+        translate_as_camel_case: bool | None = None,
     ) -> params.Depends:
         sorting_dependency = self.__call__(
             choices=choices,

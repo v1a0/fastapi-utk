@@ -2,7 +2,6 @@ import typing as tp
 from fastapi import Query
 
 from fastapi_utk import Paginated, Pagination, Paginator
-from fastapi_utk.not_set import NotSet
 
 from db.repo.user import UserRepo
 
@@ -19,7 +18,7 @@ def get_users(
     age: int | None = Query(default=None),
 ) -> Paginated[response.User]:
     total, users = UserRepo.get_users(
-        age=age or NotSet.NOT_SET,
+        age=age,
         _limit=paginator.limit,
         _offset=paginator.offset,
     )

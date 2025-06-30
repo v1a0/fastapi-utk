@@ -1,5 +1,4 @@
 from dto import User
-from fastapi_utk.not_set import NotSet
 
 
 class UserRepo:
@@ -59,23 +58,23 @@ class UserRepo:
     @classmethod
     def get_users(
         cls,
-        age: int | NotSet = NotSet.NOT_SET,
-        _limit: int | NotSet = NotSet.NOT_SET,
-        _offset: int | NotSet = NotSet.NOT_SET,
+        age: int | None = None,
+        _limit: int | None = None,
+        _offset: int | None = None,
     ) -> tuple[int, list[User]]:
         global USERS
 
         users = list(cls.fake_source)
 
-        if not isinstance(age, NotSet):
+        if age is not None:
             users = [user for user in users if user.age == age]
 
         total = len(users)
 
-        if not isinstance(_offset, NotSet):
+        if _offset is not None:
             users = users[_offset:]
 
-        if not isinstance(_limit, NotSet):
+        if _limit is not None:
             users = users[:_limit]
 
         return total, users
