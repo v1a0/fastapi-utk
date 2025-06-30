@@ -28,7 +28,7 @@ class Sorting:
     default values, and uniqueness enforcement.
 
     Attributes:
-        query_param_name: The name of the query parameter to read from (default: "sort").
+        url_query_param_name: The name of the query parameter to read from (default: "sort").
         delimiter: The separator used to split multiple values (default: ",").
         is_negative_sorting_allowed: If True, allows sorting by descending using `-field` (default: True).
         translate_as_camel_case: If True, converts incoming camelCase field names to snake_case (default: True).
@@ -53,11 +53,8 @@ class Sorting:
         ... ]
     """
 
-    query_param_name: str = "sort"
+    url_query_param_name: str = "sort"
     delimiter: str = ","
-
-    is_negative_sorting_allowed: bool = True
-    translate_as_camel_case: bool = True
 
     raise_key_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = None
     raise_unique_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = (
@@ -70,9 +67,7 @@ class Sorting:
         *,
         default: list[str] | None = None,
         delimiter: str | None = None,
-        query_param_name: str | None = None,
-        is_negative_sorting_allowed: bool | None = None,
-        translate_as_camel_case: bool | None = None,
+        url_query_param_name: str | None = None,
     ) -> tp.Callable[..., list[SortingOption]]:
         if default is None:
             default = []
@@ -80,27 +75,20 @@ class Sorting:
         if delimiter is None:
             delimiter = self.delimiter
 
-        if query_param_name is None:
-            query_param_name = self.query_param_name
+        if url_query_param_name is None:
+            url_query_param_name = self.url_query_param_name
 
-        if is_negative_sorting_allowed is None:
-            is_negative_sorting_allowed = self.is_negative_sorting_allowed
-
-        if translate_as_camel_case is None:
-            translate_as_camel_case = self.translate_as_camel_case
-
-        if translate_as_camel_case:
-            choices = [to_camel(choice) for choice in choices]
-
-        if is_negative_sorting_allowed:
-            choices += [f"-{v}" for v in choices]
+        choices = [to_camel(choice) for choice in choices]
+        choices += [f"-{v}" for v in choices]
 
         def _sorting_dependency(
             sorting_query: str | None = Query(
                 default=None,
-                alias=tp.cast(str, query_param_name),
+                alias=tp.cast(str, url_query_param_name),
                 example=tp.cast(str, delimiter).join(
-                    choice for choice in choices if not choice.startswith("-")
+                    choice
+                    for choice in (default or choices)
+                    if not choice.startswith("-")
                 ),
             ),
         ) -> list[SortingOption]:
@@ -122,13 +110,13 @@ class Sorting:
                 if key not in choices:
                     if self.raise_key_violation:
                         self.raise_key_violation(
-                            query_param_name, key, choices, sorting_query
+                            url_query_param_name, key, choices, sorting_query
                         )
 
                     raise RequestValidationError(
                         [
                             {
-                                "loc": ["query", query_param_name],
+                                "loc": ["query", url_query_param_name],
                                 "msg": f"Unknown sorting key '{key}', should be one of: {', '.join(choices)}",
                                 "type": "value_error.enum",
                             },
@@ -138,13 +126,13 @@ class Sorting:
                 if key in parsed_keys:
                     if self.raise_unique_violation:
                         self.raise_unique_violation(
-                            query_param_name, key, choices, sorting_query
+                            url_query_param_name, key, choices, sorting_query
                         )
 
                     raise RequestValidationError(
                         [
                             {
-                                "loc": ["query", query_param_name],
+                                "loc": ["query", url_query_param_name],
                                 "msg": (
                                     f"Sorting keys must be unique — '{key}' is duplicated.",
                                 ),
@@ -156,11 +144,7 @@ class Sorting:
                 parsed_keys[key] = is_desc
 
             return [
-                (
-                    SortingOption(field=to_snake(key), is_desc=is_desc)
-                    if translate_as_camel_case
-                    else SortingOption(field=key, is_desc=is_desc)
-                )
+                (SortingOption(field=to_snake(key), is_desc=is_desc))
                 for key, is_desc in parsed_keys.items()
             ]
 
@@ -172,17 +156,13 @@ class Sorting:
         *,
         default: list[str] | None = None,
         delimiter: str | None = None,
-        query_param_name: str | None = None,
-        is_negative_sorting_allowed: bool | None = None,
-        translate_as_camel_case: bool | None = None,
+        url_query_param_name: str | None = None,
     ) -> params.Depends:
         sorting_dependency = self.__call__(
             choices=choices,
             default=default,
             delimiter=delimiter,
-            query_param_name=query_param_name,
-            is_negative_sorting_allowed=is_negative_sorting_allowed,
-            translate_as_camel_case=translate_as_camel_case,
+            url_query_param_name=url_query_param_name,
         )
 
         return params.Depends(sorting_dependency)

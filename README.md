@@ -86,8 +86,8 @@ def foo(
                 default_page=1,  # default page number if query param is not set
                 default_page_size=10,  # default page size if query param is not set
                 max_page_size=100,  # maximum page size
-                url_page_param="fooPage",  # query param name to set a page number
-                url_page_size_param="fooPageSize",
+                url_page_query_param_name="fooPage",  # query param name to set a page number
+                url_page_size_query_param_name="fooPageSize",
                 # query param name to set page size, set `None` to disable this option
             )
         ]
