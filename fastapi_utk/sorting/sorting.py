@@ -1,7 +1,7 @@
 import typing as tp
 from dataclasses import dataclass
 
-from fastapi import Depends, Query
+from fastapi import Query, params
 from fastapi.exceptions import RequestValidationError
 from pydantic.alias_generators import to_camel, to_snake
 
@@ -56,7 +56,7 @@ class Sorting:
     is_negative_sorting_allowed: bool = True
     translate_as_camel_case: bool = True
 
-    def Depends(  # noqa
+    def __call__(
         self,
         choices: list[str],
         *,
@@ -65,7 +65,7 @@ class Sorting:
         query_param_name: str | NotSet = NotSet.NOT_SET,
         is_negative_sorting_allowed: bool | NotSet = NotSet.NOT_SET,
         translate_as_camel_case: bool | NotSet = NotSet.NOT_SET,
-    ) -> tp.Callable[..., None]:
+    ) -> tp.Callable[..., list[SortingOption]]:
         if isinstance(default, NotSet):
             default = []
 
@@ -148,4 +148,25 @@ class Sorting:
                 for option, is_asc in parsed_options.items()
             ]
 
-        return tp.cast(tp.Callable[..., None], Depends(_sorting_dependency))
+        return _sorting_dependency
+
+    def Depends(  # noqa
+        self,
+        choices: list[str],
+        *,
+        default: list[str] | NotSet = NotSet.NOT_SET,
+        delimiter: str | NotSet = NotSet.NOT_SET,
+        query_param_name: str | NotSet = NotSet.NOT_SET,
+        is_negative_sorting_allowed: bool | NotSet = NotSet.NOT_SET,
+        translate_as_camel_case: bool | NotSet = NotSet.NOT_SET,
+    ) -> params.Depends:
+        sorting_dependency = self.__call__(
+            choices=choices,
+            default=default,
+            delimiter=delimiter,
+            query_param_name=query_param_name,
+            is_negative_sorting_allowed=is_negative_sorting_allowed,
+            translate_as_camel_case=translate_as_camel_case,
+        )
+
+        return params.Depends(sorting_dependency)
