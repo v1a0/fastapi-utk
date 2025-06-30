@@ -2,7 +2,7 @@
 
 The most useful tools for any FastAPI project
 
-<img width="400" src="./docs/images/logo.png" />
+<img width="400" src="https://raw.githubusercontent.com/v1a0/fastapi-utk/main/docs/images/logo.png" />
 
 ## Installation
 
@@ -18,6 +18,14 @@ pip install fastapi-utk
         - PaginationConfig
         - Paginator
         - Paginated
+    - Sorting
+        - Sorting
+        - SortingOption
+        - SortingConfig
+    - Middlewares
+        - CamelCaseQueryParamsMiddleware
+    - OpenAPI
+        - translate_query_params_snake_to_camel
 - Utils
     - NotSet
 
@@ -60,12 +68,11 @@ def get_users(
 
 ### Response
 
-<img width="400" src="./docs/images/img-2.jpg" />
+<img width="400" src="https://raw.githubusercontent.com/v1a0/fastapi-utk/refs/heads/main/docs/images/img-2.jpg" />
 
 ### Schema
 
-<img width="400" src="./docs/images/img-1.jpg" />
-
+<img width="400" src="https://raw.githubusercontent.com/v1a0/fastapi-utk/refs/heads/main/docs/images/img-1.jpg" />
 
 ### Extra
 
@@ -78,7 +85,7 @@ pagination = Pagination()
 
 
 # If for some routes you need non-default configuration, set it right in depends
-@router.get("foos")
+@router.get("/foo")
 def foo(
         paginator: tp.Annotated[
             Paginator,
@@ -96,9 +103,8 @@ def foo(
 
     return paginator(..., total=...)  # total is used to calculate amount of pages
 
-# /users?fooPage=1&fooPageSize=100
+# /foo?fooPage=1&fooPageSize=100
 ```
-
 
 ----------------------------
 
@@ -138,5 +144,38 @@ def get_users(
     ]
 ```
 
+### Extra
+
+```python
+import typing as tp
+from fastapi_utk import Sorting, SortingOption
+
+# Use Sorting class to specify global pagination configuration
+sorting = Sorting()
+
+
+# If for some routes you need non-default configuration, set it right in depends
+@router.get("/foo")
+def foo(
+        sort_by: tp.Annotated[
+            list[SortingOption],
+            sorting.Depends(
+                choices=["bar", "baz_baz", "pop"],  # allowed sorting keys
+                default=["-bar"],  # default sorting 
+                delimiter=",",  # sorting keys delimiter
+                url_query_param_name="sort"  # query param name to set sorting
+            )
+        ],
+) -> ...:
+    pritn(sort_by)
+    # [
+    #     SortingOption(field="baz", is_desc=False),
+    #     SortingOption(field="baz_baz", is_desc=True),
+    # ]
+
+    
+# /foo?sort=baz,-barBaz
+
+```
 
 ----------------------------
