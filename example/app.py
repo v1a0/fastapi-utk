@@ -1,6 +1,7 @@
 import fastapi
-import uvicorn
 
+from fastapi_utk.middleware import CamelCaseQueryParamsMiddleware
+from fastapi_utk.openapi import translate_query_params_snake_to_camel
 from routes.router import root_router
 
 
@@ -11,6 +12,14 @@ PORT = 8000
 def create_app() -> fastapi.FastAPI:
     fastapi_app = fastapi.FastAPI()
     fastapi_app.include_router(root_router)
+
+    # Swagger
+    fastapi_app.openapi_schema = translate_query_params_snake_to_camel(
+        fastapi_app.openapi(),
+    )
+
+    # Middlewares
+    fastapi_app.add_middleware(CamelCaseQueryParamsMiddleware)
 
     return fastapi_app
 

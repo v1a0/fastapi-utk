@@ -2,7 +2,7 @@ import typing as tp
 from copy import deepcopy
 from dataclasses import dataclass
 
-from fastapi import Depends, Query, Request
+from fastapi import Query, Request, params
 from pydantic import BaseModel, HttpUrl
 from starlette.datastructures import URL
 
@@ -18,8 +18,8 @@ class Paginator:
     page_size: int
 
     url: URL | None = None
-    url_page_param: str | None = None
-    url_page_size_param: str | None = None
+    url_page_query_param_name: str | None = None
+    url_page_size_query_param_name: str | None = None
 
     def __call__[M: BaseModel](
         self,
@@ -48,21 +48,41 @@ class Paginator:
             next_page = self._get_page_url(next_page_number)
 
         if previous_page_number < MIN_PAGE:
-            previous_page = None
+            prev_page = None
         elif (total_pages is not None) and (previous_page_number > total_pages):
-            previous_page = self._get_page_url(total_pages)
+            prev_page = self._get_page_url(total_pages)
         else:
-            previous_page = self._get_page_url(previous_page_number)
+            prev_page = self._get_page_url(previous_page_number)
 
+        return self.paginated_response(
+            items=items,
+            total=total,
+            page=self.page,
+            page_size=page_size,
+            total_pages=total_pages,
+            next_page=next_page,
+            prev_page=prev_page,
+        )
+
+    @staticmethod
+    def paginated_response[T: BaseModel](
+        items: list[T],
+        total: int | None,
+        page: int,
+        page_size: int,
+        total_pages: int | None,
+        next_page: HttpUrl | None,
+        prev_page: HttpUrl | None,
+    ) -> Paginated[T]:
         return Paginated(
             data=items,
             pagination=PaginationInfo(
                 total=total,
-                page=self.page,
+                page=page,
                 page_size=page_size,
                 total_pages=total_pages,
                 next_page=next_page,
-                prev_page=previous_page,
+                prev_page=prev_page,
             ),
         )
 
@@ -70,16 +90,20 @@ class Paginator:
         self,
         page_number: int,
     ) -> HttpUrl | None:
-        if not self.url or not self.url_page_param or page_number < MIN_PAGE:
+        if not self.url or not self.url_page_query_param_name or page_number < MIN_PAGE:
             return None
 
         url = deepcopy(self.url)
 
-        if self.url_page_param:
-            url = url.include_query_params(**{self.url_page_param: page_number})
+        if self.url_page_query_param_name:
+            url = url.include_query_params(
+                **{self.url_page_query_param_name: page_number}
+            )
 
-        if self.url_page_size_param:
-            url = url.include_query_params(**{self.url_page_size_param: self.page_size})
+        if self.url_page_size_query_param_name:
+            url = url.include_query_params(
+                **{self.url_page_size_query_param_name: self.page_size}
+            )
 
         return HttpUrl(str(url))
 
@@ -97,38 +121,40 @@ class Pagination:
     default_page: int = 1
     default_page_size: int = 10
     max_page_size: int | None = 20
-    url_page_param: str = "page"
-    url_page_size_param: str = "pageSize"
+    url_page_query_param_name: str = "page"
+    url_page_size_query_param_name: str = "pageSize"
 
-    def Depends(  # noqa
+    def __call__(
         self,
         *,
         default_page: int | None = None,
         default_page_size: int | None = None,
         max_page_size: int | None = None,
-        url_page_param: str | None = None,
-        url_page_size_param: str | None = None,
+        url_page_query_param_name: str | None = None,
+        url_page_size_query_param_name: str | None = None,
     ) -> tp.Callable[..., Paginator]:
-        _paginator_dependency: tp.Callable[..., Paginator]
-
         default_page = default_page or self.default_page
         default_page_size = default_page_size or self.default_page_size
         max_page_size = max_page_size or self.max_page_size
-        url_page_param = url_page_param or self.url_page_param
-        url_page_size_param = url_page_size_param or self.url_page_size_param
+        url_page_query_param_name = (
+            url_page_query_param_name or self.url_page_query_param_name
+        )
+        url_page_size_query_param_name = (
+            url_page_size_query_param_name or self.url_page_size_query_param_name
+        )
 
-        if self.url_page_size_param:
+        if self.url_page_size_query_param_name:
 
-            def _paginator_dependency(
+            def _pagination_dependency(
                 request: Request,
                 page: int = Query(
                     default=default_page,
-                    alias=url_page_param,
+                    alias=url_page_query_param_name,
                     ge=MIN_PAGE,
                 ),
                 page_size: int = Query(
                     default=default_page_size,
-                    alias=url_page_size_param,
+                    alias=url_page_size_query_param_name,
                     ge=MIN_PAGE_SIZE,
                     le=max_page_size,
                 ),
@@ -137,17 +163,17 @@ class Pagination:
                     page=page,
                     page_size=page_size,
                     url=request.url,
-                    url_page_param=url_page_param,
-                    url_page_size_param=url_page_size_param,
+                    url_page_query_param_name=url_page_query_param_name,
+                    url_page_size_query_param_name=url_page_size_query_param_name,
                 )
 
         else:
 
-            def _paginator_dependency(
+            def _pagination_dependency(  # type: ignore[misc]
                 request: Request,
                 page: int = Query(
                     default=default_page,
-                    alias=url_page_param,
+                    alias=url_page_query_param_name,
                     ge=MIN_PAGE,
                     le=max_page_size,
                 ),
@@ -156,7 +182,26 @@ class Pagination:
                     page=page,
                     page_size=default_page_size,
                     url=request.url,
-                    url_page_param=url_page_param,
+                    url_page_query_param_name=url_page_query_param_name,
                 )
 
-        return tp.cast(tp.Callable[..., Paginator], Depends(_paginator_dependency))
+        return _pagination_dependency
+
+    def Depends(  # noqa
+        self,
+        *,
+        default_page: int | None = None,
+        default_page_size: int | None = None,
+        max_page_size: int | None = None,
+        url_page_query_param_name: str | None = None,
+        url_page_size_query_param_name: str | None = None,
+    ) -> params.Depends:
+        pagination_dependency = self.__call__(
+            default_page=default_page,
+            default_page_size=default_page_size,
+            max_page_size=max_page_size,
+            url_page_query_param_name=url_page_query_param_name,
+            url_page_size_query_param_name=url_page_size_query_param_name,
+        )
+
+        return params.Depends(pagination_dependency)
