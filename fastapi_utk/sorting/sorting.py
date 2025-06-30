@@ -1,3 +1,4 @@
+import collections
 import typing as tp
 from dataclasses import dataclass
 
@@ -8,7 +9,11 @@ from pydantic.alias_generators import to_camel, to_snake
 
 class SortingOption(tp.NamedTuple):
     field: str
-    is_asc: bool
+    is_desc: bool
+
+    @property
+    def is_asc(self) -> bool:
+        return not self.is_desc
 
 
 @dataclass
@@ -43,8 +48,8 @@ class Sorting:
         Will produce:
         >>> sort
         ... [
-        ...     SortingOption(field="created_at", is_asc=False),
-        ...     SortingOption(field="name", is_asc=True),
+        ...     SortingOption(field="created_at", is_desc=False),
+        ...     SortingOption(field="name", is_desc=True),
         ... ]
     """
 
@@ -53,6 +58,11 @@ class Sorting:
 
     is_negative_sorting_allowed: bool = True
     translate_as_camel_case: bool = True
+
+    raise_key_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = None
+    raise_unique_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = (
+        None
+    )
 
     def __call__(
         self,
@@ -79,11 +89,11 @@ class Sorting:
         if translate_as_camel_case is None:
             translate_as_camel_case = self.translate_as_camel_case
 
-        if is_negative_sorting_allowed:
-            choices += [f"-{v}" for v in choices]
-
         if translate_as_camel_case:
             choices = [to_camel(choice) for choice in choices]
+
+        if is_negative_sorting_allowed:
+            choices += [f"-{v}" for v in choices]
 
         def _sorting_dependency(
             sorting_query: str | None = Query(
@@ -96,54 +106,62 @@ class Sorting:
         ) -> list[SortingOption]:
             if sorting_query is None:
                 return [
-                    SortingOption(
-                        field=option.lstrip("-"), is_asc=option.startswith("-")
-                    )
-                    for option in default
+                    SortingOption(field=key.lstrip("-"), is_desc=key.startswith("-"))
+                    for key in default
                 ]
 
-            parsed_options = {}
+            parsed_keys = collections.OrderedDict()
 
-            for sorting_option in sorting_query.strip().split(self.delimiter):
-                is_asc = not str(sorting_option).startswith("-")
-                option = str(sorting_option).lstrip("-").strip()
+            for sorting_keys in sorting_query.strip().split(self.delimiter):
+                is_desc = str(sorting_keys).startswith("-")
+                key = str(sorting_keys).lstrip("-").strip()
 
-                if not option:
+                if not key:
                     continue
 
-                if option not in choices:
+                if key not in choices:
+                    if self.raise_key_violation:
+                        self.raise_key_violation(
+                            query_param_name, key, choices, sorting_query
+                        )
+
                     raise RequestValidationError(
                         [
                             {
                                 "loc": ["query", query_param_name],
-                                "msg": f"Unknown sorting option '{option}', should be one of: {', '.join(choices)}",
+                                "msg": f"Unknown sorting key '{key}', should be one of: {', '.join(choices)}",
                                 "type": "value_error.enum",
                             },
                         ],
                     )
 
-                if option in parsed_options:
+                if key in parsed_keys:
+                    if self.raise_unique_violation:
+                        self.raise_unique_violation(
+                            query_param_name, key, choices, sorting_query
+                        )
+
                     raise RequestValidationError(
                         [
                             {
                                 "loc": ["query", query_param_name],
                                 "msg": (
-                                    f"Sorting parameters must be unique — '{option}' is duplicated.",
+                                    f"Sorting keys must be unique — '{key}' is duplicated.",
                                 ),
                                 "type": "value_error.list.unique_items",
                             },
                         ],
                     )
 
-                parsed_options[option] = is_asc
+                parsed_keys[key] = is_desc
 
             return [
                 (
-                    SortingOption(field=to_snake(option), is_asc=is_asc)
+                    SortingOption(field=to_snake(key), is_desc=is_desc)
                     if translate_as_camel_case
-                    else SortingOption(field=option, is_asc=is_asc)
+                    else SortingOption(field=key, is_desc=is_desc)
                 )
-                for option, is_asc in parsed_options.items()
+                for key, is_desc in parsed_keys.items()
             ]
 
         return _sorting_dependency
