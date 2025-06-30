@@ -165,7 +165,7 @@ wheels = [
 
 [[package]]
 name = "fastapi-utk"
-version = "0.1.1"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
@@ -571,7 +571,7 @@ wheels = [
 
 [[package]]
 name = "requests-toolbelt"
-version = "1.0.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
