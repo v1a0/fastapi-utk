@@ -1,4 +1,4 @@
-from pydantic import HttpUrl, BaseModel
+from pydantic import BaseModel, HttpUrl
 from pydantic.alias_generators import to_camel
 
 __all__ = [

@@ -40,9 +40,7 @@ class CamelCaseQueryParamsMiddleware(BaseHTTPMiddleware):
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        query_params = {
-            to_snake(key): value for key, value in request.query_params.multi_items()
-        }
+        query_params = {to_snake(key): value for key, value in request.query_params.multi_items()}
 
         request.scope["query_string"] = urlencode(query_params, doseq=True).encode(
             "utf-8",

@@ -57,9 +57,7 @@ class Sorting:
     delimiter: str = ","
 
     raise_key_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = None
-    raise_unique_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = (
-        None
-    )
+    raise_unique_violation: tp.Callable[[str, str, list[str], str], tp.Never] | None = None
 
     def __call__(
         self,
@@ -86,18 +84,12 @@ class Sorting:
                 default=None,
                 alias=tp.cast(str, url_query_param_name),
                 example=tp.cast(str, delimiter).join(
-                    choice
-                    for choice in (
-                        default or {key for key in choices if not key.startswith("-")}
-                    )
+                    choice for choice in (default or {key for key in choices if not key.startswith("-")})
                 ),
             ),
         ) -> list[SortingOption]:
             if sorting_query is None:
-                return [
-                    SortingOption(field=key.lstrip("-"), is_desc=key.startswith("-"))
-                    for key in default
-                ]
+                return [SortingOption(field=key.lstrip("-"), is_desc=key.startswith("-")) for key in default]
 
             parsed_keys = collections.OrderedDict()
 
@@ -110,9 +102,7 @@ class Sorting:
 
                 if key not in choices:
                     if self.raise_key_violation:
-                        self.raise_key_violation(
-                            url_query_param_name, key, choices, sorting_query
-                        )
+                        self.raise_key_violation(url_query_param_name, key, choices, sorting_query)
 
                     raise RequestValidationError(
                         [
@@ -126,17 +116,13 @@ class Sorting:
 
                 if key in parsed_keys:
                     if self.raise_unique_violation:
-                        self.raise_unique_violation(
-                            url_query_param_name, key, choices, sorting_query
-                        )
+                        self.raise_unique_violation(url_query_param_name, key, choices, sorting_query)
 
                     raise RequestValidationError(
                         [
                             {
                                 "loc": ["query", url_query_param_name],
-                                "msg": (
-                                    f"Sorting keys must be unique — '{key}' is duplicated.",
-                                ),
+                                "msg": (f"Sorting keys must be unique — '{key}' is duplicated.",),
                                 "type": "value_error.list.unique_items",
                             },
                         ],
@@ -144,10 +130,7 @@ class Sorting:
 
                 parsed_keys[key] = is_desc
 
-            return [
-                (SortingOption(field=to_snake(key), is_desc=is_desc))
-                for key, is_desc in parsed_keys.items()
-            ]
+            return [(SortingOption(field=to_snake(key), is_desc=is_desc)) for key, is_desc in parsed_keys.items()]
 
         return _sorting_dependency
 

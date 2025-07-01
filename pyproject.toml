@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
+dynamic = ["version"]
 name = "fastapi-utk"
-version = "1.0.2"
 description = "FastAPI Ultimate Toolkit"
 readme = "README.md"
 authors = [
@@ -34,6 +34,70 @@ dev = [
     "twine>=6.1.0",
 ]
 
+[tool.setuptools.dynamic]
+version = { attr = "fastapi_utk.__version__" }
+
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["example*", "docs*"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+
+[tool.ruff.lint]
+preview = true
+select = [# see https://docs.astral.sh/ruff/rules
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "N", # PEP8 naming convetions
+    "B", # flake8-bugbear
+    "S", # flake8-bandit
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    "ANN", #  flake8-annotations
+    "FA", # flake8-future-annotations
+    "ASYNC", #  flake8-async
+    "G", # flake8-logging-format
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "TD", # flake8-todos
+]
+ignore = [
+    "C901", # too complex
+    "W191", # indentation contains tabs
+    "A005", # stdlib-module-shadowing
+    "TD002", # Missing author in TD
+    "TD003", # Missing issue link
+    "G004", # Logging statement uses f-string
+    "COM812" # ???
+]
+fixable = [
+    "I", # isort
+    "COM", # trailing comma
+    "W291", # trailing-whitespace
+    "W292", #  No newline at end of file
+    "W293", # blank-line-with-whitespace
+    "F401", # auto-removal of unused imports
+]
+unfixable = []
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
