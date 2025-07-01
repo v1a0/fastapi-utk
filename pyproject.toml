@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
+dynamic = ["version"]
 name = "fastapi-utk"
-version = "1.0.2"
 description = "FastAPI Ultimate Toolkit"
 readme = "README.md"
 authors = [
@@ -33,6 +33,9 @@ dev = [
     "ruff>=0.11.11",
     "twine>=6.1.0",
 ]
+
+[tool.setuptools.dynamic]
+version = { attr = "fastapi_utk.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["."]

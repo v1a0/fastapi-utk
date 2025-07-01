@@ -1,6 +1,6 @@
-from .pagination import Pagination, Paginator, Paginated
-from .sorting import Sorting, SortingOption
 from .not_set import NotSet
+from .pagination import Paginated, Pagination, Paginator
+from .sorting import Sorting, SortingOption
 
 __all__ = [
     "Pagination",
@@ -10,3 +10,5 @@ __all__ = [
     "SortingOption",
     "NotSet",
 ]
+
+__version__ = "1.0.3"
