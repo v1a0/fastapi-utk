@@ -96,14 +96,10 @@ class Paginator:
         url = deepcopy(self.url)
 
         if self.url_page_query_param_name:
-            url = url.include_query_params(
-                **{self.url_page_query_param_name: page_number}
-            )
+            url = url.include_query_params(**{self.url_page_query_param_name: page_number})
 
         if self.url_page_size_query_param_name:
-            url = url.include_query_params(
-                **{self.url_page_size_query_param_name: self.page_size}
-            )
+            url = url.include_query_params(**{self.url_page_size_query_param_name: self.page_size})
 
         return HttpUrl(str(url))
 
@@ -136,12 +132,8 @@ class Pagination:
         default_page = default_page or self.default_page
         default_page_size = default_page_size or self.default_page_size
         max_page_size = max_page_size or self.max_page_size
-        url_page_query_param_name = (
-            url_page_query_param_name or self.url_page_query_param_name
-        )
-        url_page_size_query_param_name = (
-            url_page_size_query_param_name or self.url_page_size_query_param_name
-        )
+        url_page_query_param_name = url_page_query_param_name or self.url_page_query_param_name
+        url_page_size_query_param_name = url_page_size_query_param_name or self.url_page_size_query_param_name
 
         if self.url_page_size_query_param_name:
 

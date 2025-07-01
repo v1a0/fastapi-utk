@@ -32,9 +32,7 @@ def translate_query_params_snake_to_camel(
                     old_param_name = str(param["name"])
                     new_param_name = to_camel(old_param_name)
 
-                    path = path.replace(
-                        f"{{{old_param_name}}}", f"{{{new_param_name}}}"
-                    )
+                    path = path.replace(f"{{{old_param_name}}}", f"{{{new_param_name}}}")
                     param["name"] = new_param_name
 
         new_openapi_schema["paths"][path] = methods

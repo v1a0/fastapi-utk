@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from dto import User
+
 from fastapi_utk import SortingOption
 
 
@@ -83,9 +84,7 @@ class UserRepo:
             for sort_option in reversed(_sort_by):
                 match sort_option.field:
                     case "id":
-                        users = sorted(
-                            users, key=lambda user: user.id, reverse=sort_option.is_desc
-                        )
+                        users = sorted(users, key=lambda user: user.id, reverse=sort_option.is_desc)
                     case "age":
                         users = sorted(
                             users,
