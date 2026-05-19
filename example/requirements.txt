@@ -10,7 +10,7 @@ fastapi==0.115.12
     # via fastapi-utk (pyproject.toml)
 h11==0.16.0
     # via uvicorn
-idna==3.10
+idna==3.15
     # via anyio
 pydantic==2.11.5
     # via
